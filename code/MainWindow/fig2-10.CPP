@@ -8,11 +8,29 @@
 
 void Display();
 void Init(void);
-void player(int);
 void sides();
 void myKeyboard(unsigned char, int, int);
-
 int pos = 0;
+
+struct Player{
+public:
+    int pos = 0; //Center of screen; Origin
+
+    void moveLeft() {
+        this->pos--;
+    }
+
+    void moveRight() {
+        this->pos++;
+    }
+
+    int getPos() {
+        return this->pos;
+    }
+};
+
+Player genplayer(int);
+Player p;
 
 void main(int argc, char** argv)
 {
@@ -32,10 +50,10 @@ void Display()
 
     //show sides function
     sides();
-
+    
     // show player
-    player(WIN_WIDTH / 2);
-
+    p = genplayer((WIN_WIDTH / 2)+ pos);
+    pos = p.getPos();
 
     glFlush();
 
@@ -66,10 +84,10 @@ void myKeyboard(unsigned char theKey, int mouseX, int mouseY)
     switch (theKey)
     {
     case GLUT_KEY_LEFT:
-       //left move
+        p.moveLeft();
         break;
     case GLUT_KEY_RIGHT:
-        //right move
+        p.moveRight();
         break;
     case 'E':
         exit(-1); //terminate the program
@@ -117,10 +135,10 @@ void sides()
 }
 
 // creates the player bar
-void player(int x)
+Player genplayer(int x)
 {
     glColor3f(0.70f, 0.13f, 0.13f);
-
+    Player pl = Player();
     glBegin(GL_QUADS);
 
     glVertex3f(x - PLAYER_WIDTH / 2, 0, 0);
@@ -133,6 +151,7 @@ void player(int x)
 
 
     glEnd();
+    return pl;
 }
 
 
