@@ -1,5 +1,5 @@
-#ifndef ogamalBreakout_MyObjects_h
-#define ogamalBreakout_MyObjects_h
+#ifndef MyObjects_h
+#define MyObjects_h
 
 // Ball
 struct Ball {
