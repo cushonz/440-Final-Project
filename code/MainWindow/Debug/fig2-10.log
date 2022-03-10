@@ -1,1 +1,3 @@
-﻿  fig2-10.vcxproj -> D:\CS440\Final\Debug\fig2-10.exe
+﻿cl : command line warning D9035: option 'Gm' has been deprecated and will be removed in a future release
+  fig2-10.CPP
+  fig2-10.vcxproj -> C:\Users\zachc\Documents\GitHub\bud\440-Final-Project\code\MainWindow\Debug\fig2-10.exe
