@@ -13,13 +13,15 @@ public:
     //~Brick();
     int health;
     bool hasItem; //drops item on death
-    float posx, posy;
+    float posx1, posy1, posx2, posy2;
 
-    Brick(int H, bool I, float x, float y) {
+    Brick(int H, bool I, float x1, float y1, float x2, float y2) {
         this->health = H;
         this->hasItem = I;
-        this->posx = x;
-        this->posy = y;
+        this->posx1 = x1;
+        this->posy1 = y1;
+        this->posx2 = x2;
+        this->posy2 = y2;
     }
     ~Brick() {}
 };
@@ -147,16 +149,20 @@ void drawLevel(int level) {
 
 std::vector<Brick> createBricks(int rows) {
     std::vector<Brick> brick_list;
-    float x = 0, y = WIN_HEIGHT - 50;
+    float x1 = 35, y1 = WIN_HEIGHT - 50, x2 = 55, y2 = WIN_HEIGHT - 45;
     int health = rows;
     for (int i = 0; i < rows; i++) {
-        for (int k = 0; k < 1; k++) {
-            Brick newBrick(health, false, x, y);
+        for (int k = 0; k < 27; k++) {
+            Brick newBrick(health, false, x1, y1, x2, y2);
             brick_list.push_back(newBrick);
-            x += 5;
+            x1 += 21;
+            x2 += 21;
         }
         health--;
-        y -= 80;
+        x1 = 35;
+        x2 = 55;
+        y1 -= 7;
+        y2 -= 7;
 
     }
     return brick_list;
@@ -176,7 +182,7 @@ void drawBricks(std::vector<Brick> brick_list) {
         else if (it->health == 4) {
             glColor3f(0.05f, 0.05f, 1.0f);
         }
-        glRectf(it->posx, it->posy, 5, 5);
+        glRectf(it->posx1, it->posy1, it->posx2, it->posy2);
         
     }
 }
