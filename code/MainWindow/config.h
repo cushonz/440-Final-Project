@@ -20,4 +20,8 @@ const int PLAYER_HEIGHT = 5;
 const float BALL_RADIUS = 6.0f;
 const int CIRCLE_SEGMENTS = 50; // used in drawing ball and the life/heart symbol
 
+// Brick settings
+const int BRICK_ROWS = 4;
+const int BRICK_COLS = 8;
+
 #endif
