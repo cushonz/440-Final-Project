@@ -1,36 +1,37 @@
 #include <windows.h>
 #include <gl/Gl.h>
 #include <gl/Glu.h>
+/*#include <iostream.h> */
 #include "glut.h"
 #include <random>
+#include <vector>
 #include "config.h"
 
+class Brick {
+public:
+    //Brick(int, bool, float, float);
+    //~Brick();
+    int health;
+    bool hasItem; //drops item on death
+    float posx, posy;
+
+    Brick(int H, bool I, float x, float y) {
+        this->health = H;
+        this->hasItem = I;
+        this->posx = x;
+        this->posy = y;
+    }
+    ~Brick() {}
+};
 
 void Display();
 void Init(void);
+void player(int);
 void sides();
-void myKeyboard(unsigned char, int, int);
-int pos = 0;
+void drawLevel(int);
+std::vector<Brick> createBricks(int);
+void drawBricks(std::vector<Brick>);
 
-struct Player{
-public:
-    int pos = 0; //Center of screen; Origin
-
-    void moveLeft() {
-        this->pos--;
-    }
-
-    void moveRight() {
-        this->pos++;
-    }
-
-    int getPos() {
-        return this->pos;
-    }
-};
-
-Player genplayer(int);
-Player p;
 
 void main(int argc, char** argv)
 {
@@ -41,7 +42,6 @@ void main(int argc, char** argv)
     glutCreateWindow("Breakout Game");
     glutDisplayFunc(Display);
     Init();
-    glutKeyboardFunc(myKeyboard);
     glutMainLoop();
 }
 void Display()
@@ -50,10 +50,12 @@ void Display()
 
     //show sides function
     sides();
-    
+
     // show player
-    p = genplayer((WIN_WIDTH / 2)+ pos);
-    pos = p.getPos();
+    player(WIN_WIDTH / 2);
+
+    drawLevel(1);
+
 
     glFlush();
 
@@ -67,33 +69,6 @@ void Init()
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluOrtho2D(1.0, 640.0, 0.0, 480.0);
-}
-
-struct GLintPoint {
-public:
-    GLint x, y;
-};
-
-void myKeyboard(unsigned char theKey, int mouseX, int mouseY)
-{
-#define NUM 20
-    static GLintPoint List[NUM];
-    static int last = -1;
-    GLint x = mouseX;
-    GLint y = 640 - mouseY; // flip the y value as always
-    switch (theKey)
-    {
-    case GLUT_KEY_LEFT:
-        p.moveLeft();
-        break;
-    case GLUT_KEY_RIGHT:
-        p.moveRight();
-        break;
-    case 'E':
-        exit(-1); //terminate the program
-    default:
-        break;       // do nothing
-    }
 }
 
 void sides()
@@ -135,23 +110,75 @@ void sides()
 }
 
 // creates the player bar
-Player genplayer(int x)
+void player(int x)
 {
     glColor3f(0.70f, 0.13f, 0.13f);
-    Player pl = Player();
+
     glBegin(GL_QUADS);
 
     glVertex3f(x - PLAYER_WIDTH / 2, 0, 0);
 
-    glVertex3f(x - PLAYER_WIDTH / 2, PLAYER_HEIGHT, 0);
+     glVertex3f(x - PLAYER_WIDTH / 2, PLAYER_HEIGHT, 0);
 
-    glVertex3f(x + PLAYER_WIDTH / 2, PLAYER_HEIGHT, 0);
+     glVertex3f(x + PLAYER_WIDTH / 2, PLAYER_HEIGHT, 0);
 
-    glVertex3f(x + PLAYER_WIDTH / 2, 0, 0);
+     glVertex3f(x + PLAYER_WIDTH / 2, 0, 0);
 
 
     glEnd();
-    return pl;
+}
+
+void drawLevel(int level) {
+    if (level == 1) {
+        drawBricks(createBricks(3));
+    } else if (level == 2) {
+        drawBricks(createBricks(4));
+    }
+    else if (level == 3) {
+        drawBricks(createBricks(5));
+    }
+    else if (level == 4) {
+        drawBricks(createBricks(6));
+    }
+    else if (level == 5) {
+        drawBricks(createBricks(7));
+    }
+}
+
+std::vector<Brick> createBricks(int rows) {
+    std::vector<Brick> brick_list;
+    float x = 0, y = WIN_HEIGHT - 50;
+    int health = rows;
+    for (int i = 0; i < rows; i++) {
+        for (int k = 0; k < 1; k++) {
+            Brick newBrick(health, false, x, y);
+            brick_list.push_back(newBrick);
+            x += 5;
+        }
+        health--;
+        y -= 80;
+
+    }
+    return brick_list;
+}
+
+void drawBricks(std::vector<Brick> brick_list) {
+    for (std::vector<Brick>::iterator it = brick_list.begin(); it != brick_list.end(); it++) {
+        if (it->health == 1) {
+            glColor3f(0.7f, 1.5f, 0.2f);
+        }
+        else if (it->health == 2) {
+            glColor3f(1.0f, 0.0f, 0.0f);
+        }
+        else if (it->health == 3) {
+            glColor3f(0.0f, 1.0f, 0.0f);
+        }
+        else if (it->health == 4) {
+            glColor3f(0.05f, 0.05f, 1.0f);
+        }
+        glRectf(it->posx, it->posy, 5, 5);
+        
+    }
 }
 
 
