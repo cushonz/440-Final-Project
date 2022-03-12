@@ -3,19 +3,41 @@
 #include <gl/Glu.h>
 #include "glut.h"
 #include <random>
+#include <vector>
 #include "config.h"
 
+class Brick {
+public:
+    //Brick(int, bool, float, float);
+    //~Brick();
+    int health;
+    bool hasItem; //drops item on death
+    float posx1, posy1, posx2, posy2;
 
+    Brick(int H, bool I, float x1, float y1, float x2, float y2) {
+        this->health = H;
+        this->hasItem = I;
+        this->posx1 = x1;
+        this->posy1 = y1;
+        this->posx2 = x2;
+        this->posy2 = y2;
+    }
+    ~Brick() {}
+};
 void Display();
 void Init(void);
 void sides();
 void displayPlayer();
 void displayBall();
-void displayBricks();
+//void displayBricks();
 void myKeyboard(unsigned char, int, int);
 void playerMove(int, int, int);
 void recomputeFrame(int value);
-void createBricks();
+//void createBricks();
+std::vector<Brick> createBricks(int);
+void drawBricks(std::vector<Brick>);
+void drawLevel(int);
+
 
 struct Ball {
 public:
@@ -84,71 +106,77 @@ public:
     }
 };
 
-struct Brick {
-public:
-    
-    int intX;
-    int intY;
+boolean checkCollisionBrick(Brick, Ball);
+boolean checkCollisionBoundry(Ball);
 
-    // brick level and life
-    int level = 0;
-    bool brickLife = true;
-
-
-    Brick() {
-
-        intX = 0;
-        intY = 0;
-    }
-    void hit() {
-        
-        if (brickLife) {
-            level++;
-
-
-            if (level == 3) {
-                brickLife = false;
-            }
-        }
-    }
-
-    int getX() {
-        return this->intX;
-    }
-
-    int getY() {
-        return this->intY;
-    }
-
-    int getLevel() {
-        return this->level;
-    }
-
-    bool isLife() {
-        return this->brickLife;
-    }
-
-    void setX(int x) {
-        intX = x;
-    }
-    void setY(int y) {
-        intY = y;
-    }
-};
+//struct Brick {
+//public:
+//    
+//    int intX;
+//    int intY;
+//
+//    // brick level and life
+//    int level = 0;
+//    bool brickLife = true;
+//
+//
+//    Brick() {
+//
+//        intX = 0;
+//        intY = 0;
+//    }
+//    void hit() {
+//        
+//        if (brickLife) {
+//            level++;
+//
+//
+//            if (level == 3) {
+//                brickLife = false;
+//            }
+//        }
+//    }
+//
+//    int getX() {
+//        return this->intX;
+//    }
+//
+//    int getY() {
+//        return this->intY;
+//    }
+//
+//    int getLevel() {
+//        return this->level;
+//    }
+//
+//    bool isLife() {
+//        return this->brickLife;
+//    }
+//
+//    void setX(int x) {
+//        intX = x;
+//    }
+//    void setY(int y) {
+//        intY = y;
+//    }
+//};
 
 // creates player, ball, and bricks
 Player p;
 Ball b;
-Brick bricks[BRICK_ROWS * BRICK_COLS];
+//Brick bricks[BRICK_ROWS * BRICK_COLS];
+std::vector<Brick> brick_list;
 
 
 void main(int argc, char** argv)
 {
-    createBricks();
+    //createBricks();
+    
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(WIN_WIDTH, WIN_HEIGHT);
     glutCreateWindow("Breakout Game");
+    drawLevel(1);
     glutDisplayFunc(Display);
     Init();
     glutKeyboardFunc(myKeyboard);
@@ -174,9 +202,15 @@ void Display()
 
     // display ball
     displayBall();
+    
 
     //display bricks
-    displayBricks();
+    //displayBricks();
+    drawBricks(brick_list);
+
+    if (checkCollisionBoundry(b)) {
+        b.changeDirection(1);
+    }
 
     b.move();
 
@@ -305,61 +339,128 @@ void displayBall() {
     glEnd();
 
 }
-
-void createBricks() {
-
-    int currX = 30;
-    int currY = WIN_HEIGHT - 40;
-    int brickWidth = (WIN_WIDTH - 60 - (BRICK_COLS - 1) * 5) / BRICK_COLS;
-
-    int n = 0;
-
-    for (int i = 0; i < BRICK_ROWS; i++) {
-        for (int j = 0; j < BRICK_COLS; j++) {
-            bricks[n].setX(currX + brickWidth / 2);
-            bricks[n].setY( currY + 5);
-            n++;
-            currX += brickWidth + 5;
+void drawLevel(int level) {
+    if (level == 1) {
+        createBricks(3);
+    }
+    else if (level == 2) {
+        createBricks(4);
+    }
+    else if (level == 3) {
+        createBricks(5);
+    }
+    else if (level == 4) {
+        createBricks(6);
+    }
+    else if (level == 5) {
+        createBricks(7);
+        //drawBricks(createBricks(7));
+    }
+}
+std::vector<Brick> createBricks(int rows) {
+    float x1 = 35, y1 = WIN_HEIGHT - 50, x2 = 55, y2 = WIN_HEIGHT - 45;
+    int health = rows;
+    for (int i = 0; i < rows; i++) {
+        for (int k = 0; k < 27; k++) {
+            Brick newBrick(health, false, x1, y1, x2, y2);
+            brick_list.push_back(newBrick);
+            x1 += 21;
+            x2 += 21;
         }
-        currY -= 15;
-        currX = 30;
+        health--;
+        x1 = 35;
+        x2 = 55;
+        y1 -= 7;
+        y2 -= 7;
+
+    }
+    return brick_list;
+}
+
+void drawBricks(std::vector<Brick> brick_list) {
+    for (std::vector<Brick>::iterator it = brick_list.begin(); it != brick_list.end(); it++) {
+        if (it->health == 1) {
+            glColor3f(0.7f, 1.5f, 0.2f);
+        }
+        else if (it->health == 2) {
+            glColor3f(1.0f, 0.0f, 0.0f);
+        }
+        else if (it->health == 3) {
+            glColor3f(0.0f, 1.0f, 0.0f);
+        }
+        else if (it->health == 4) {
+            glColor3f(0.05f, 0.05f, 1.0f);
+        }
+        glRectf(it->posx1, it->posy1, it->posx2, it->posy2);
+
     }
 }
 
-void displayBricks() {
-
-    int brickWidth = (WIN_WIDTH - 60 - (BRICK_COLS - 1) * 5) / BRICK_COLS;
-
-    glBegin(GL_QUADS);
-    for (int i = 0; i < BRICK_COLS * BRICK_ROWS; i++) {
-
-        // if it hits a brick that is out of lives then it skips it
-        if (!bricks[i].isLife()) {
-            continue;
-        }
-
-        if (bricks[i].getLevel() == 0) {
-            glColor3f(0.0f, 0.0f, 0.5f);
-        }
-        else if (bricks[i].getLevel() == 1) {
-            glColor3f(0.2f, 0.6f, 0.41f);
-        }
-        else if (bricks[i].getLevel() == 2) {
-            glColor3f(0.5f, 0.0f, 0.5f);
-        }
-
-        // draw brick
-        glVertex3f(bricks[i].getX() - brickWidth / 2, bricks[i].getY() - 5, 0);
-
-        glVertex3f(bricks[i].getX() + brickWidth / 2, bricks[i].getY() - 5, 0);
-
-        glVertex3f(bricks[i].getX() + brickWidth / 2, bricks[i].getY() + 5, 0);
-
-        glVertex3f(bricks[i].getX() - brickWidth / 2, bricks[i].getY() + 5, 0);
-
-        
-    }
-    glEnd();
-    
+boolean checkCollisionBrick(Brick brick, Ball b) {
+    if (brick.posx1 <= b.getX() && brick.posy1 <= b.getY() && brick.posx2 >= b.getX() && brick.posy2 >= b.getY()) {
+        return true;
+    } else { return false; }
 }
+boolean checkCollisionBoundry(Ball b) {
+    if (b.getX() >= WIN_WIDTH - 25 || b.getX() <= 25 || b.getY() >= WIN_HEIGHT-5) {
+        return true;
+    } else { return false; }
+}
+
+//void createBricks() {
+//
+//    int currX = 30;
+//    int currY = WIN_HEIGHT - 40;
+//    int brickWidth = (WIN_WIDTH - 60 - (BRICK_COLS - 1) * 5) / BRICK_COLS;
+//
+//    int n = 0;
+//
+//    for (int i = 0; i < BRICK_ROWS; i++) {
+//        for (int j = 0; j < BRICK_COLS; j++) {
+//            bricks[n].setX(currX + brickWidth / 2);
+//            bricks[n].setY( currY + 5);
+//            n++;
+//            currX += brickWidth + 5;
+//        }
+//        currY -= 15;
+//        currX = 30;
+//    }
+//}
+
+//void displayBricks() {
+//
+//    int brickWidth = (WIN_WIDTH - 60 - (BRICK_COLS - 1) * 5) / BRICK_COLS;
+//
+//    glBegin(GL_QUADS);
+//    for (int i = 0; i < BRICK_COLS * BRICK_ROWS; i++) {
+//
+//        // if it hits a brick that is out of lives then it skips it
+//        if (!bricks[i].isLife()) {
+//            continue;
+//        }
+//
+//        if (bricks[i].getLevel() == 0) {
+//            glColor3f(0.0f, 0.0f, 0.5f);
+//        }
+//        else if (bricks[i].getLevel() == 1) {
+//            glColor3f(0.2f, 0.6f, 0.41f);
+//        }
+//        else if (bricks[i].getLevel() == 2) {
+//            glColor3f(0.5f, 0.0f, 0.5f);
+//        }
+//
+//        // draw brick
+//        glVertex3f(bricks[i].getX() - brickWidth / 2, bricks[i].getY() - 5, 0);
+//
+//        glVertex3f(bricks[i].getX() + brickWidth / 2, bricks[i].getY() - 5, 0);
+//
+//        glVertex3f(bricks[i].getX() + brickWidth / 2, bricks[i].getY() + 5, 0);
+//
+//        glVertex3f(bricks[i].getX() - brickWidth / 2, bricks[i].getY() + 5, 0);
+//
+//        
+//    }
+//    glEnd();
+//    
+//}
 
